@@ -229,9 +229,7 @@ d_tidy$saccade_outlier <- d_tidy$saccade_pref < lower | d_tidy$saccade_pref > up
 compareValues(obtainedValue = sum(d_tidy$saccade_outlier), reportedValue = 3)
 ```
 
-
 > After removal of these outliers, the mean saccadic preference index was still significantly above 0 (M = 8.72% (±3.79 SEM); 
-
 
 ```{r}
 d_tidy_nooutlier <- filter(d_tidy, saccade_outlier == FALSE)
