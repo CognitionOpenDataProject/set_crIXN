@@ -10,7 +10,7 @@ output:
 #### Pilot: Mike Frank
 #### Co-pilot: Tom Hardwicke
 #### Start date: 8/10/17
-#### End date: 
+#### End date: 5/08/17
 
 -------
 
@@ -164,15 +164,13 @@ compareValues(obtainedValue = twoafc_ttest$statistic, reportedValue = 0.65)
 
 > In addition, Bayes analysis of participants’ task performance yielded Bayes factors of 0.01 and 0.04 for uniform distributions above and below 50%, respectively, providing substantial evidence for the null hypothesis, that is, no difference from a chance level of 50%.
 
-The authors report using an online calculator for Bayes Factors. This link: [http://www.lifesci.sussex.ac.uk/home/Zoltan_Dienes/infer- ence/-bayes_factor.swf]() led us to a calculator. Inputting the settings given returned:
+The authors report using an online calculator for Bayes Factors. This link: [http://www.lifesci.sussex.ac.uk/home/Zoltan_Dienes/inference/-bayes_factor.swf]() led us to a calculator however, it was unclear exactly how to specify the distributions mention in the text in the calculator. After corresponding with the authors we were able to reproduce the reported Bayes factors
 
 ![](upper.png)
 
 and 
 
 ![](lower.png)
-
-Which provides Bayes factors of Infinity, which are clearly not right. 
 
 > Regarding participants’ eye movements at the lowest confidence level, we first probed whether saccades were more frequently directed towards the actual position of the faces in comparison to all possible locations in which the face stimuli could potentially appear. To this end, we computed the proportion of saccadic endpoints landing on the two concurrently presented faces in relation to saccadic endpoints landing within all possible face locations. Saccades were significantly more frequently directed towards the actually presented face stimuli compared to all possible locations of the faces (M = 49.83% (±2.32 SEM); 
 
@@ -183,7 +181,6 @@ compareValues(obtainedValue = mean(d_tidy$prop_saccades), reportedValue = 49.83)
 # standard error
 compareValues(obtainedValue = sem(d_tidy$prop_saccades),  
               reportedValue = 2.32)
-
 ```
 
 
@@ -193,6 +190,7 @@ compareValues(obtainedValue = sem(d_tidy$prop_saccades),
 prop_ttest <- t.test(d_tidy$prop_saccades - 40.7)
 prop_ttest
 ```
+
 ```{r}
 compareValues(obtainedValue = prop_ttest$statistic, reportedValue = 3.93)
 ```
@@ -206,7 +204,6 @@ compareValues(obtainedValue = mean(d_tidy$saccade_pref), reportedValue = 10.41)
 # standard error
 compareValues(obtainedValue = sem(d_tidy$saccade_pref),  
               reportedValue = 4.95)
-
 ```
 
 
@@ -216,6 +213,7 @@ compareValues(obtainedValue = sem(d_tidy$saccade_pref),
 saccade_ttest <- t.test(d_tidy$saccade_pref)
 saccade_ttest
 ```
+
 ```{r}
 compareValues(obtainedValue = saccade_ttest$statistic, reportedValue = 2.10)
 ```
@@ -240,7 +238,6 @@ compareValues(obtainedValue = mean(d_tidy_nooutlier$saccade_pref), reportedValue
 # standard error
 compareValues(obtainedValue = sem(d_tidy_nooutlier$saccade_pref),  
               reportedValue = 3.79)
-
 ```
 
 > one sample t-test: t(22) = 2.30; p = 0.031; d = 0.48). 
@@ -249,6 +246,24 @@ compareValues(obtainedValue = sem(d_tidy_nooutlier$saccade_pref),
 saccade_nooutlier_ttest <- t.test(d_tidy_nooutlier$saccade_pref)
 saccade_nooutlier_ttest
 compareValues(obtainedValue = saccade_nooutlier_ttest$statistic, reportedValue = 2.30)
+```
+
+** NB author assistance - SEMS **
+We were initially unable to reproduce the SEM values. However, after contacting the original authors we learned that the reported SEMs have actually been adjusted to take into account within-subject variance, based on an algorithm introduced by Cousineau (2005). This requires norming the data first (below). After taking these steps we could successfully reproduce the SEMs.
+
+First norm the data:
+
+```{r}
+d_tidy <- d_tidy %>% 
+  rowwise() %>%
+  mutate(p_av = mean(c(latency_direct, latency_averted)))
+
+grand_mean <- mean(d_tidy$p_av)
+
+d_tidy <- d_tidy %>%
+  rowwise() %>%
+  mutate(latency_direct_normed = latency_direct - p_av + grand_mean,
+         latency_averted_normed = latency_averted - p_av + grand_mean)
 ```
 
 > No difference in saccade latencies between direct (M = 446.94 ms (±9.51 SEM)) 
@@ -261,7 +276,7 @@ compareValues(obtainedValue = mean(d_tidy$latency_direct),
               reportedValue = 446.94)
 
 # standard error
-compareValues(obtainedValue = sem(d_tidy$latency_direct),  
+compareValues(obtainedValue = sem(d_tidy$latency_direct_normed),  
               reportedValue = 9.51)
 ```
 
@@ -275,7 +290,7 @@ compareValues(obtainedValue = mean(d_tidy$latency_averted),
               reportedValue = 429.96)
 
 # standard error
-compareValues(obtainedValue = sem(d_tidy$latency_averted),  
+compareValues(obtainedValue = sem(d_tidy$latency_averted_normed),  
               reportedValue = 9.51)
 ```
 
@@ -326,18 +341,18 @@ ggplot(data = data.frame(mean = mean(d_tidy$saccade_pref),
 ```{r}
 codReport(Report_Type = 'joint',
           Article_ID = 'crIXN', 
-          Insufficient_Information_Errors = 1,
+          Insufficient_Information_Errors = 0,
           Decision_Errors = 0, 
-          Major_Numerical_Errors = 2, 
+          Major_Numerical_Errors = 0, 
           Minor_Numerical_Errors = 2,
-          Author_Assistance = F)
+          Author_Assistance = T)
 ```
 
-Almost all results were successfully reproduced, with two exceptions: 
+In our first report, almost all results were successfully reproduced, with two exceptions. However, after contacting the authors, we received information that enable us to resolve the issues and successfully reproduce all target outcomes. The issues are outlined below:
 
-1. We were uncertain what precise settings for Bayes Factors were employed in the online calculator. (See screenshots).
+1. We were uncertain what precise settings for Bayes Factors were employed in the online calculator. The authors supplied this information and we were able to successfully reproduce the reported Bayes Factors.
 
-2. We would like clarification of the SEMs for the direct and averted gaze latencies. It appears that there may be a copy-paste issue as they are identical for the two conditions and don't appear related to the underlying data. 
+2. We were unable to reproduce the SEMs for the direct and averted gaze latencies. The authors notified us that the reported SEMs have actually been adjusted to take into account within-subject variance (this was not mentioned in the article), based on an algorithm introduced by Cousineau (2005). This requires norming the data first. After taking these steps we could successfully reproduce the reported SEMs.
 
 
 ```{r session_info, include=TRUE, echo=TRUE, results='markup'}
