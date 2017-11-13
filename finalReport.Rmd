@@ -9,8 +9,10 @@ output:
 #### Article ID: crIXN
 #### Pilot: Mike Frank
 #### Co-pilot: Tom Hardwicke
-#### Start date: 8/10/17
-#### End date: 5/08/17
+#### Start date: Aug 10 2017
+#### End date: Sep 5 2017
+#### Final verification: Tom Hardwicke
+#### Date: Nov 8 2017
 
 -------
 
@@ -32,20 +34,16 @@ For this article you should focus on the findings reported in section 2.2 Result
 
 > Regarding participants’ eye movements at the lowest confidence level, we first probed whether saccades were more frequently directed towards the actual position of the faces in comparison to all possible locations in which the face stimuli could potentially appear. To this end, we computed the proportion of saccadic endpoints landing on the two concurrently presented faces in relation to saccadic endpoints landing within all possible face locations. Saccades were significantly more frequently directed towards the actually presented face stimuli compared to all possible locations of the faces (M = 49.83% (±2.32 SEM); one sample t-test against 40.7% representing the area covered by two faces relative to all possible locations of the faces: t(25) = 3.93, p < 0.001). Of these face-directed saccades, the mean saccadic preference index across participants was M = 10.41% (±4.95 SEM) (Fig. 2B), which was significantly larger than 0 (one sample t-test: t(25) = 2.10; p = 0.046; d = 0.41). This indicates that relative to all face-directed saccades, saccades were ∼10% more often guided towards faces with direct gaze compared to averted gaze. In three participants, saccadic indices were identified as statistical outliers, because they were either 1.5 times the interquartile range above the 75th percentile or below the 25th percentile of the group distribution. After removal of these outliers, the mean saccadic preference index was still significantly above 0 (M = 8.72% (±3.79 SEM); one sample t-test: t(22) = 2.30; p = 0.031; d = 0.48). No difference in saccade latencies between direct (M = 446.94 ms (±9.51 SEM)) and averted gaze (M = 429.96 ms (±9.51 SEM); paired sample t-test: t(25) = 0.89; p = 0.38; d = 0.18) was found.
 
-![](fig2.png)
+![](images/fig2.png)
 
 ------
 
 ```{r global_options, include=FALSE}
 knitr::opts_chunk$set(echo=TRUE, warning=FALSE, message=FALSE)
-```
 
-```{r}
-sem <- function (x) {
-  sd(x, na.rm=TRUE) / sqrt(sum(!is.na((x))))
-}
+# prepare an empty report object, we will update this each time we run compareValues2()
+reportObject <- data.frame("Article_ID" = NA, "valuesChecked" = 0, "eyeballs" = 0, "Total_df" = 0, "Total_p" = 0, "Total_mean" = 0, "Total_sd" = 0, "Total_se" = 0, "Total_ci" = 0, "Total_bf" = 0, "Total_t" = 0, "Total_F" = 0, "Total_es" = 0, "Total_median" = 0, "Total_irr" = 0, "Total_r" = 0, "Total_z" = 0, "Total_coeff" = 0, "Total_n" = 0, "Total_x2" = 0, "Total_other" = 0, "Insufficient_Information_Errors" = 0, "Decision_Errors" = 0, "Major_Numerical_Errors" = 0, "Minor_Numerical_Errors" = 0, "Major_df" = 0, "Major_p" = 0, "Major_mean" = 0, "Major_sd" = 0, "Major_se" = 0, "Major_ci" = 0, "Major_bf" = 0, "Major_t" = 0, "Major_F" = 0, "Major_es" = 0, "Major_median" = 0, "Major_irr" = 0, "Major_r" = 0, "Major_z" = 0, "Major_coeff" = 0, "Major_n" = 0, "Major_x2" = 0, "Major_other" = 0, "affectsConclusion" = NA, "error_typo" = 0, "error_specification" = 0, "error_analysis" = 0, "error_data" = 0, "error_unidentified" = 0, "Author_Assistance" = NA, "resolved_typo" = 0, "resolved_specification" = 0, "resolved_analysis" = 0, "resolved_data" = 0, "correctionSuggested" = NA, "correctionPublished" = NA)
 ```
-
 
 ## Step 1: Load packages
 
@@ -55,6 +53,10 @@ library(knitr) # for kable table formating
 library(readxl) # import excel files
 library(CODreports) # custom report functions
 library(magrittr) # for compound pipes
+library(lsr) # for cohens d
+sem <- function (x) { # for sem
+  sd(x, na.rm=TRUE) / sqrt(sum(!is.na((x))))
+}
 ```
 
 ## Step 2: Load data
@@ -97,11 +99,13 @@ Check this.
 ```{r}
 nrow(d_tidy)
 ```
+
 Before exclusions, N matches.
 
 ```{r}
 sum(is.na(d_tidy$exclude))
 ```
+
 Excluding marked participants yields 26, also matches.
 
 ```{r}
@@ -110,10 +114,12 @@ d_tidy %<>%
 
 sum(d_tidy$sex == "F")
 mean(d_tidy$age) # with exclusions
+reportObject <- compareValues2(reportedValue = "24.65", obtainedValue = mean(d_tidy$age), valueType = 'mean')
+reportObject <- compareValues2(reportedValue = "0.76", obtainedValue = sem(d_tidy$age), valueType = 'se')
 mean(d1$`Age (years)`) # no exclusions
 ```
 
-Number of females matches, although mean age is a little different numerically. It's actually closer to the mean across all participants. Unclear what's happened. 
+Number of females matches, although mean age is a little different numerically. It's actually closer to the mean across all participants. Unclear what's happened. SE looks ok.
 
 ## Step 4: Run analysis
 
@@ -128,13 +134,11 @@ All preprocessing is done for us.
 
 ```{r}
 # mean
-compareValues(obtainedValue = mean(d_tidy$unsure)*100, reportedValue = 58.5)
+reportObject <- compareValues2(reportedValue = "58.5", obtainedValue = mean(d_tidy$unsure)*100, valueType = 'mean')
 
 # standard error
-compareValues(obtainedValue = sem(d_tidy$unsure)*100,  
-              reportedValue = 4.7)
+reportObject <- compareValues2(reportedValue = "4.7", obtainedValue = sem(d_tidy$unsure)*100, valueType = 'se')
 ```
-
 
 > In these trials, participants were unable to correctly guess the presentation of the faces in the manual 2AFC task (M = 50.54% (±0.84 SEM); 
 
@@ -142,68 +146,76 @@ We don't have individual trial-level data for 2AFC, we guess that the 2AFC means
 
 ```{r}
 # mean 
-compareValues(obtainedValue = mean(d_tidy$two_afc)*100, reportedValue = 50.54)
+reportObject <- compareValues2(obtainedValue = mean(d_tidy$two_afc)*100, reportedValue = "50.54", valueType = 'mean')
 
 # standard error
-compareValues(obtainedValue = sem(d_tidy$two_afc)*100,  
-                reportedValue = .84)
+reportObject <- compareValues2(obtainedValue = sem(d_tidy$two_afc)*100,  
+                reportedValue = "0.84", valueType = 'se')
 
 ```
 
 > one-sample t-test against 50%: t(25) = 0.65, p > 0.05; Fig. 2A), indicating that the faces were effectively suppressed from awareness. 
 
 ```{r}
-twoafc_ttest <- t.test(d_tidy$two_afc - .5) 
-twoafc_ttest
+twoafc_ttest <- t.test(d_tidy$two_afc - .5)
 ```
 
 ```{r}
-compareValues(obtainedValue = twoafc_ttest$statistic, reportedValue = 0.65)
+reportObject <- compareValues2(obtainedValue = twoafc_ttest$parameter[[1]], reportedValue = "25", valueType = 'df')
+reportObject <- compareValues2(obtainedValue = twoafc_ttest$statistic, reportedValue = "0.65", valueType = 't')
+reportObject <- compareValues2(obtainedValue = twoafc_ttest$p.value, reportedValue = "eyeballMATCH", valueType = 'p')
 ```
 
 
 > In addition, Bayes analysis of participants’ task performance yielded Bayes factors of 0.01 and 0.04 for uniform distributions above and below 50%, respectively, providing substantial evidence for the null hypothesis, that is, no difference from a chance level of 50%.
 
-The authors report using an online calculator for Bayes Factors. This link: [http://www.lifesci.sussex.ac.uk/home/Zoltan_Dienes/inference/-bayes_factor.swf]() led us to a calculator however, it was unclear exactly how to specify the distributions mention in the text in the calculator. After corresponding with the authors we were able to reproduce the reported Bayes factors
+The authors report using an online calculator for Bayes Factors. This link: [http://www.lifesci.sussex.ac.uk/home/Zoltan_Dienes/inference/-bayes_factor.swf]() led us to a calculator however, it was unclear exactly how to specify the distributions mentioned in the text in the calculator. After corresponding with the authors we were able to reproduce the reported Bayes factors
 
-![](upper.png)
+![](images/upper.png)
 
-and 
+```{r}
+reportObject <- compareValues2(reportedValue = "eyeballMATCH", obtainedValue = 0.04, valueType = 'bf')
+```
 
-![](lower.png)
+
+![](images/lower.png)
+
+```{r}
+reportObject <- compareValues2(reportedValue = "eyeballMATCH", obtainedValue = 0.01, valueType = 'bf')
+```
 
 > Regarding participants’ eye movements at the lowest confidence level, we first probed whether saccades were more frequently directed towards the actual position of the faces in comparison to all possible locations in which the face stimuli could potentially appear. To this end, we computed the proportion of saccadic endpoints landing on the two concurrently presented faces in relation to saccadic endpoints landing within all possible face locations. Saccades were significantly more frequently directed towards the actually presented face stimuli compared to all possible locations of the faces (M = 49.83% (±2.32 SEM); 
 
 ```{r}
 # mean 
-compareValues(obtainedValue = mean(d_tidy$prop_saccades), reportedValue = 49.83)
+reportObject <- compareValues2(obtainedValue = mean(d_tidy$prop_saccades), reportedValue = "49.83", valueType = 'mean')
 
 # standard error
-compareValues(obtainedValue = sem(d_tidy$prop_saccades),  
-              reportedValue = 2.32)
+reportObject <- compareValues2(obtainedValue = sem(d_tidy$prop_saccades),  
+              reportedValue = "2.32", valueType = 'se')
 ```
-
 
 > one sample t-test against 40.7% representing the area covered by two faces relative to all possible locations of the faces: t(25) = 3.93, p < 0.001). 
 
 ```{r}
 prop_ttest <- t.test(d_tidy$prop_saccades - 40.7)
-prop_ttest
 ```
 
 ```{r}
-compareValues(obtainedValue = prop_ttest$statistic, reportedValue = 3.93)
+reportObject <- compareValues2(obtainedValue = prop_ttest$parameter[[1]], reportedValue = "25", valueType = 'df')
+reportObject <- compareValues2(obtainedValue = prop_ttest$statistic, reportedValue = "3.93", valueType = 't')
+reportObject <- compareValues2(obtainedValue = prop_ttest$p.value, reportedValue = "eyeballMATCH", valueType = 'p')
 ```
 
 > Of these face-directed saccades, the mean saccadic preference index across participants was M = 10.41% (±4.95 SEM) (Fig. 2B), 
 
 ```{r}
 # mean 
-compareValues(obtainedValue = mean(d_tidy$saccade_pref), reportedValue = 10.41)
+reportObject <- compareValues2(obtainedValue = mean(d_tidy$saccade_pref), reportedValue = "10.41", valueType = 'mean')
 
 # standard error
-compareValues(obtainedValue = sem(d_tidy$saccade_pref),  
-              reportedValue = 4.95)
+reportObject <- compareValues2(obtainedValue = sem(d_tidy$saccade_pref),  
+              reportedValue = "4.95", valueType = 'se')
 ```
 
 
@@ -211,11 +223,14 @@ compareValues(obtainedValue = sem(d_tidy$saccade_pref),
 
 ```{r}
 saccade_ttest <- t.test(d_tidy$saccade_pref)
-saccade_ttest
+d <- cohensD(d_tidy$saccade_pref)
 ```
 
 ```{r}
-compareValues(obtainedValue = saccade_ttest$statistic, reportedValue = 2.10)
+reportObject <- compareValues2(obtainedValue = saccade_ttest$parameter[[1]], reportedValue = "25", valueType = 'df')
+reportObject <- compareValues2(obtainedValue = saccade_ttest$statistic, reportedValue = "2.10", valueType = 't')
+reportObject <- compareValues2(obtainedValue = saccade_ttest$p.value, reportedValue = "0.046", valueType = 'p')
+reportObject <- compareValues2(obtainedValue = d, reportedValue = "0.41", valueType = 'es')
 ```
 
 > In three participants, saccadic indices were identified as statistical outliers, because they were either 1.5 times the interquartile range above the 75th percentile or below the 25th percentile of the group distribution. 
@@ -224,7 +239,7 @@ compareValues(obtainedValue = saccade_ttest$statistic, reportedValue = 2.10)
 upper <- quantile(d_tidy$saccade_pref, .75) + IQR(d_tidy$saccade_pref)*1.5
 lower <- quantile(d_tidy$saccade_pref, .25) - IQR(d_tidy$saccade_pref)*1.5
 d_tidy$saccade_outlier <- d_tidy$saccade_pref < lower | d_tidy$saccade_pref > upper
-compareValues(obtainedValue = sum(d_tidy$saccade_outlier), reportedValue = 3)
+reportObject <- compareValues2(obtainedValue = sum(d_tidy$saccade_outlier), reportedValue = "3", valueType = 'other')
 ```
 
 > After removal of these outliers, the mean saccadic preference index was still significantly above 0 (M = 8.72% (±3.79 SEM); 
@@ -233,19 +248,23 @@ compareValues(obtainedValue = sum(d_tidy$saccade_outlier), reportedValue = 3)
 d_tidy_nooutlier <- filter(d_tidy, saccade_outlier == FALSE)
 
 # mean 
-compareValues(obtainedValue = mean(d_tidy_nooutlier$saccade_pref), reportedValue = 8.72)
+reportObject <- compareValues2(obtainedValue = mean(d_tidy_nooutlier$saccade_pref), reportedValue = "8.72", valueType = 'mean')
 
 # standard error
-compareValues(obtainedValue = sem(d_tidy_nooutlier$saccade_pref),  
-              reportedValue = 3.79)
+reportObject <- compareValues2(obtainedValue = sem(d_tidy_nooutlier$saccade_pref),  
+              reportedValue = "3.79", valueType = 'se')
 ```
 
 > one sample t-test: t(22) = 2.30; p = 0.031; d = 0.48). 
 
 ```{r}
 saccade_nooutlier_ttest <- t.test(d_tidy_nooutlier$saccade_pref)
-saccade_nooutlier_ttest
-compareValues(obtainedValue = saccade_nooutlier_ttest$statistic, reportedValue = 2.30)
+d <- cohensD(d_tidy_nooutlier$saccade_pref)
+
+reportObject <- compareValues2(obtainedValue = saccade_nooutlier_ttest$parameter[[1]], reportedValue = "22", valueType = 'df')
+reportObject <- compareValues2(obtainedValue = saccade_nooutlier_ttest$statistic, reportedValue = "2.30", valueType = 't')
+reportObject <- compareValues2(obtainedValue = saccade_nooutlier_ttest$p.value, reportedValue = "0.031", valueType = 'p')
+reportObject <- compareValues2(obtainedValue = d, reportedValue = "0.48", valueType = 'es')
 ```
 
 ** NB author assistance - SEMS **
@@ -272,26 +291,24 @@ Note the presence of NAs (missing data).
 
 ```{r}
 # mean
-compareValues(obtainedValue = mean(d_tidy$latency_direct), 
-              reportedValue = 446.94)
+reportObject <- compareValues2(obtainedValue = mean(d_tidy$latency_direct), 
+              reportedValue = "446.94", valueType = "mean")
 
 # standard error
-compareValues(obtainedValue = sem(d_tidy$latency_direct_normed),  
-              reportedValue = 9.51)
+reportObject <- compareValues2(obtainedValue = sem(d_tidy$latency_direct_normed),  
+              reportedValue = "9.51", valueType = "se")
 ```
-
-Looks like a copy and paste error on the SD from the Averted condition. 
 
 > and averted gaze (M = 429.96 ms (±9.51 SEM); 
 
 ```{r}
 # mean
-compareValues(obtainedValue = mean(d_tidy$latency_averted), 
-              reportedValue = 429.96)
+reportObject <- compareValues2(obtainedValue = mean(d_tidy$latency_averted), 
+              reportedValue = "429.96", valueType = 'mean')
 
 # standard error
-compareValues(obtainedValue = sem(d_tidy$latency_averted_normed),  
-              reportedValue = 9.51)
+reportObject <- compareValues2(obtainedValue = sem(d_tidy$latency_averted_normed),  
+              reportedValue = "9.51", valueType = 'se')
 ```
 
 > paired sample t-test: t(25) = 0.89; p = 0.38; d = 0.18) was found.
@@ -300,24 +317,25 @@ compareValues(obtainedValue = sem(d_tidy$latency_averted_normed),
 latency_ttest <- t.test(d_tidy$latency_direct, d_tidy$latency_averted, 
                         paired = TRUE, 
                         var.equal = TRUE)
-latency_ttest
 ```
 
 
 ```{r}
-compareValues(obtainedValue = latency_ttest$statistic, .89)
+reportObject <- compareValues2(obtainedValue = latency_ttest$parameter[1], reportedValue = "25", valueType = 'df')
+reportObject <- compareValues2(obtainedValue = latency_ttest$statistic, reportedValue = "0.89", valueType = 't')
+reportObject <- compareValues2(obtainedValue = latency_ttest$p.value, reportedValue = "0.38", valueType = 'p')
 ```
 
-Figure 2 (reproduced from above). 
+Try to reproduce Figure 2:
 
-![](fig2.png)
+![](images/fig2.png)
 
 ```{r}
 # side A
-ggplot(data = data.frame(mean = mean(d_tidy$two_afc), 
+A <- ggplot(data = data.frame(mean = mean(d_tidy$two_afc), 
                          sem = sem(d_tidy$two_afc)),
                          aes(x = 1, y = mean)) + 
-  geom_bar(stat = "identity") + 
+  geom_bar(stat = "identity", width = .02) + 
   geom_linerange(aes(ymin = mean - sem, ymax = mean + sem)) + 
   ylim(0,.6) + 
   xlab("") + ylab("2AFC")
@@ -325,8 +343,8 @@ ggplot(data = data.frame(mean = mean(d_tidy$two_afc),
 
 
 ```{r}
-# side A
-ggplot(data = data.frame(mean = mean(d_tidy$saccade_pref), 
+# side B
+B <- ggplot(data = data.frame(mean = mean(d_tidy$saccade_pref), 
                          sem = sem(d_tidy$saccade_pref)),
                          aes(x = 1, y = mean)) + 
   geom_bar(stat = "identity") + 
@@ -335,18 +353,11 @@ ggplot(data = data.frame(mean = mean(d_tidy$saccade_pref),
   xlab("") + ylab("2AFC")
 ```
 
+```{r}
+cowplot::plot_grid(A, B)
+```
 
 ## Step 5: Conclusion
-
-```{r}
-codReport(Report_Type = 'joint',
-          Article_ID = 'crIXN', 
-          Insufficient_Information_Errors = 0,
-          Decision_Errors = 0, 
-          Major_Numerical_Errors = 0, 
-          Minor_Numerical_Errors = 2,
-          Author_Assistance = T)
-```
 
 In our first report, almost all results were successfully reproduced, with two exceptions. However, after contacting the authors, we received information that enable us to resolve the issues and successfully reproduce all target outcomes. The issues are outlined below:
 
@@ -354,6 +365,57 @@ In our first report, almost all results were successfully reproduced, with two e
 
 2. We were unable to reproduce the SEMs for the direct and averted gaze latencies. The authors notified us that the reported SEMs have actually been adjusted to take into account within-subject variance (this was not mentioned in the article), based on an algorithm introduced by Cousineau (2005). This requires norming the data first. After taking these steps we could successfully reproduce the reported SEMs.
 
+```{r}
+reportObject$Article_ID <- "crIXN"
+reportObject$affectsConclusion <- NA
+reportObject$error_typo <- 0
+reportObject$error_specification <-  0
+reportObject$error_analysis <- 0
+reportObject$error_data <- 0
+reportObject$error_unidentified <- 0
+reportObject$Author_Assistance <- T
+reportObject$resolved_typo <- 0
+reportObject$resolved_specification <- 2
+reportObject$resolved_analysis <- 0
+reportObject$resolved_data <- 0
+reportObject$correctionSuggested <- NA
+reportObject$correctionPublished <- NA
+
+# decide on final outcome
+if(reportObject$Decision_Errors > 0 | reportObject$Major_Numerical_Errors > 0 | reportObject$Insufficient_Information_Errors > 0){
+  reportObject$finalOutcome <- "Failure"
+  if(reportObject$Author_Assistance == T){
+    reportObject$finalOutcome <- "Failure despite author assistance"
+  }
+}else{
+  reportObject$finalOutcome <- "Success"
+  if(reportObject$Author_Assistance == T){
+    reportObject$finalOutcome <- "Success with author assistance"
+  }
+}
+
+# save the report object
+filename <- paste0("reportObject_", reportObject$Article_ID,".csv")
+write_csv(reportObject, filename)
+
+```
+
+## Report Object
+
+```{r, echo = FALSE}
+# display report object in chunks
+kable(reportObject[2:10], align = 'l')
+kable(reportObject[11:20], align = 'l')
+kable(reportObject[21:25], align = 'l')
+kable(reportObject[26:30], align = 'l')
+kable(reportObject[31:35], align = 'l')
+kable(reportObject[36:40], align = 'l')
+kable(reportObject[41:45], align = 'l')
+kable(reportObject[46:51], align = 'l')
+kable(reportObject[52:57], align = 'l')
+```
+
+## Session information
 
 ```{r session_info, include=TRUE, echo=TRUE, results='markup'}
 devtools::session_info()
